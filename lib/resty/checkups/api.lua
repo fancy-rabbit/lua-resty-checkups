@@ -240,7 +240,19 @@ local function gen_upstream(skey, upstream)
         end
 
         dyupstream = dyupstream or {}
-        dyupstream.cluster = upstream
+        if upstream.servers then
+            -- store config
+            for k, v in pairs(upstream) do
+                if k ~= "servers" then
+                    dyupstream[k] = v
+                else
+                    dyupstream.cluster = { { servers = v } }
+                end
+            end
+        else
+            -- only cluster
+            dyupstream.cluster = upstream
+        end
         ups = dyupstream
     end
 
