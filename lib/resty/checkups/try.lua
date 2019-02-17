@@ -64,7 +64,7 @@ local function prepare_callbacks(skey, opts)
     local mode = ups.mode
     local next_server_func = round_robin.next_round_robin_server
     local key
-    if mode ~= nil then
+    if mode ~= nil and mode ~= "rr" and mode ~= "wrr" then
         if mode == "hash" then
             key = opts.hash_key or ngx.var.uri
         elseif mode == "url_hash" then
