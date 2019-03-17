@@ -320,6 +320,9 @@ local heartbeat = {
             if statuses[status] == false then
                 return _M.STATUS_ERR, "bad status code"
             end
+            if statuses[status] == nil and tonumber(status) >= ngx.HTTP_BAD_REQUEST then
+                return _M.STATUS_ERR, "bad status code"
+            end
         end
 
         sock:setkeepalive()

@@ -171,6 +171,10 @@ function _M.check_res(res, check_opts)
                 http_opts.statuses[status] == false then
                 return false
             end
+            if http_opts and http_opts.statuses and
+                http_opts.statuses[status] == nil and tonumber(status) >= ngx.HTTP_BAD_REQUEST then
+                return false
+            end
         end
         return true
     end
