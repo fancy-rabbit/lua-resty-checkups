@@ -5,6 +5,8 @@ local cjson         = require "cjson.safe"
 local lock          = require "resty.lock"
 local subsystem     = require "resty.subsystem"
 
+local lrucache      = require "resty.lrucache"
+
 local str_format    = string.format
 local str_sub       = string.sub
 local str_find      = string.find
@@ -186,7 +188,16 @@ end
 function _M.try_server(skey, ups, srv, callback, args, try)
     try = try or 1
     local peer_key = _gen_key(skey, srv)
-    local peer_status = cjson.decode(state:get(PEER_STATUS_PREFIX .. peer_key))
+    local peer_status
+    if _M.peer_status_cache then
+        peer_status = _M.peer_status_cache:get(PEER_STATUS_PREFIX .. peer_key)
+    end
+    if not peer_status then
+        peer_status = cjson.decode(state:get(PEER_STATUS_PREFIX .. peer_key))
+        if _M.peer_status_cache then
+            _M.peer_status_cache:set(PEER_STATUS_PREFIX .. peer_key, peer_status, upstream.checkup_timer_interval)
+        end
+    end
     local res, err
 
     if peer_status == nil or peer_status.status ~= _M.STATUS_ERR then
@@ -224,7 +235,16 @@ end
 
 function _M.get_peer_status(skey, srv)
     local peer_key = PEER_STATUS_PREFIX .. _gen_key(skey, srv)
-    local peer_status = state:get(peer_key)
+    local peer_status
+    if _M.peer_status_cache then
+        peer_status = _M.peer_status_cache:get(peer_key)
+    end
+    if not peer_status then
+        peer_status = state:get(peer_key)
+        if _M.peer_status_cache then
+            _M.peer_status_cache:set(peer_key, peer_status, upstream.checkup_timer_interval)
+        end
+    end
     return not _M.is_nul(peer_status) and cjson.decode(peer_status) or nil
 end
 

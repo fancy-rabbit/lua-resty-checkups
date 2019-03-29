@@ -7,6 +7,7 @@ local dyconfig        = require "resty.checkups.dyconfig"
 local base            = require "resty.checkups.base"
 local try             = require "resty.checkups.try"
 local subsystem       = require "resty.subsystem"
+local lrucache        = require "resty.lrucache"
 local process         = require "ngx.process"
 
 local str_format = string.format
@@ -118,6 +119,8 @@ function _M.prepare_checker(config)
     base.upstream.shd_config_timer_interval = config.global.shd_config_timer_interval
         or base.upstream.checkup_timer_interval
     base.upstream.default_heartbeat_enable = config.global.default_heartbeat_enable
+
+    base.peer_status_cache = lrucache.new(config.global.peer_status_cache_size or 10240)
 
     for skey, ups in pairs(config) do
         if type(ups) == "table" and type(ups.cluster) == "table" then
