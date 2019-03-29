@@ -33,7 +33,7 @@ _M._gen_shd_key = _gen_shd_key
 
 
 local function shd_config_syncer(premature)
-    local ckey = base.CHECKUP_TIMER_KEY .. ":shd_config:" .. worker_id()
+    local ckey = base.CHECKUP_TIMER_KEY .. ":shd_config:" .. (worker_id() or -1)
     update_time()
 
     if premature then
@@ -279,7 +279,7 @@ function _M.create_shd_config_syncer()
     end
 
     local overtime = base.upstream.checkup_timer_overtime
-    local ckey = base.CHECKUP_TIMER_KEY .. ":shd_config:" .. worker_id()
+    local ckey = base.CHECKUP_TIMER_KEY .. ":shd_config:" .. (worker_id() or -1)
     local ok, err = mutex:set(ckey, 1, overtime)
     if not ok then
         log(WARN, "failed to update shm: ", err)

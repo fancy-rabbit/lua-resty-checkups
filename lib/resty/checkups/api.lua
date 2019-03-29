@@ -7,6 +7,7 @@ local dyconfig        = require "resty.checkups.dyconfig"
 local base            = require "resty.checkups.base"
 local try             = require "resty.checkups.try"
 local subsystem       = require "resty.subsystem"
+local process         = require "ngx.process"
 
 local str_format = string.format
 
@@ -16,7 +17,6 @@ local now        = ngx.now
 local ERR        = ngx.ERR
 local WARN       = ngx.WARN
 local INFO       = ngx.INFO
-local worker_id  = ngx.worker.id
 local get_phase  = ngx.get_phase
 local type       = type
 local next       = next
@@ -195,14 +195,11 @@ function _M.create_checker()
         base.ups_status_timer_created = true
     end
 
-    if not worker_id then
-        log(ERR, "ngx_http_lua_module version too low, no heartbeat timer will be created")
-        return
-    elseif worker_id() ~= 0 then
+    if process.type() ~= "privileged agent" then
         return
     end
 
-    -- only worker 0 will create heartbeat timer
+    -- only privileged agent will create heartbeat timer
     local ok, err = ngx.timer.at(0, heartbeat.active_checkup)
     if not ok then
         log(WARN, "failed to create timer: ", err)
