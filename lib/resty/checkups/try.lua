@@ -73,6 +73,15 @@ local function prepare_callbacks(skey, opts)
             key = ngx.var.remote_addr
         elseif mode == "header_hash" then
             key = ngx.var.http_x_hash_key or ngx.var.uri
+        elseif mode == "uid_hash" or mode == "webuid_hash" then
+            if mode == "uid_hash" then
+                key = ngx.var.arg_u
+            else
+                key = ngx.var.web_uid
+            end
+            if not key or key == '' or tonumber(key) <= 0 or tonumber(key) == 6 then
+                key = tostring(math.random(-1024, -1))
+            end
         end
 
         next_server_func = consistent_hash.next_consistent_hash_server
@@ -230,5 +239,6 @@ function _M.try_cluster(skey, request_cb, opts)
     return res, err
 end
 
+math.randomseed(tostring(ngx.now() * 1000):reverse())
 
 return _M
