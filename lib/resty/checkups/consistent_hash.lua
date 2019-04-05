@@ -4,37 +4,27 @@ local floor      = math.floor
 local str_byte   = string.byte
 local tab_sort   = table.sort
 local tab_insert = table.insert
+local bxor       = bit.bxor
 
 local _M = { _VERSION = "0.11" }
 
-local MOD       = 2 ^ 32
-local REPLICAS  = 20
-local LUCKY_NUM = 13
+local REPLICAS  = 160
+local LUCKY_NUM = 1
 
 
 local function hash_string(str)
-    local key = 0
-    for i = 1, #str do
-        key = (key * 31 + str_byte(str, i)) % MOD
-    end
-
-    return key
+    return bxor(ngx.crc32_short(str), 0xffffffff)
 end
 
 
 local function init_consistent_hash_state(servers)
-    local weight_sum = 0
-    for _, srv in ipairs(servers) do
-        weight_sum = weight_sum + (srv.weight or 1)
-    end
-
     local circle, members = {}, 0
     for index, srv in ipairs(servers) do
         local key = ("%s:%s"):format(srv.host, srv.port)
         local base_hash = hash_string(key)
-        for c = 1, REPLICAS * weight_sum do
+        for c = 1, REPLICAS * (srv.weight or 1) do
             -- TODO: more balance hash
-            local hash = (base_hash * c * LUCKY_NUM) % MOD
+            local hash = bxor(base_hash * c * LUCKY_NUM, 0xffffffff)
             tab_insert(circle, { hash, index })
         end
         members = members + 1
