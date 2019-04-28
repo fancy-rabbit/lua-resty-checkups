@@ -120,9 +120,15 @@ local function prepare_callbacks(skey, opts)
     local try_cnt = 0
     local try_limit = opts.try or ups.try or srvs_cnt
     local retry_cb = function(res)
-        if is_tab(res) and res.status and is_tab(statuses) then
-            if statuses[tostring(res.status)] ~= false then
-                if status[tostring(res.status)] ~= nil or res.status < ngx.HTTP_BAD_REQUEST then
+        if is_tab(res) and res.status then
+            if is_tab(statuses) then
+                if statuses[tostring(res.status)] ~= false then
+                    if status[tostring(res.status)] ~= nil or res.status < ngx.HTTP_BAD_REQUEST then
+                        return REQUEST_SUCCESS
+                    end
+                end
+            else
+                if res.status < ngx.HTTP_BAD_REQUEST then
                     return REQUEST_SUCCESS
                 end
             end

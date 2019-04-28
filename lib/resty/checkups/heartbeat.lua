@@ -308,21 +308,22 @@ local heartbeat = {
         end
 
         local statuses = opts.statuses
-        if statuses then
-            local from, to, err = re_find(status_line,
-                [[^HTTP/\d+\.\d+\s+(\d+)]], "joi", nil, 1)
-            if not from then
-                log(ERR, "bad status line from: ", id, ", ", err)
-                return _M.STATUS_ERR, err
-            end
+        if not statuses then
+            statuses = {}
+        end
+        local from, to, err = re_find(status_line,
+            [[^HTTP/\d+\.\d+\s+(\d+)]], "joi", nil, 1)
+        if not from then
+            log(ERR, "bad status line from: ", id, ", ", err)
+            return _M.STATUS_ERR, err
+        end
 
-            local status = str_sub(status_line, from, to)
-            if statuses[status] == false then
-                return _M.STATUS_ERR, "bad status code"
-            end
-            if statuses[status] == nil and tonumber(status) >= ngx.HTTP_BAD_REQUEST then
-                return _M.STATUS_ERR, "bad status code"
-            end
+        local status = str_sub(status_line, from, to)
+        if statuses[status] == false then
+            return _M.STATUS_ERR, "bad status code"
+        end
+        if statuses[status] == nil and tonumber(status) >= ngx.HTTP_BAD_REQUEST then
+            return _M.STATUS_ERR, "bad status code"
         end
 
         sock:setkeepalive()
