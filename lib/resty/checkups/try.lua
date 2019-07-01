@@ -167,7 +167,7 @@ local function prepare_callbacks(skey, opts)
     end
     local set_status_cb = function(srv, failed)
         local key = ("%s:%s:%s"):format(cls_key, srv.host, srv.port)
-        bad_servers[key] = failed
+        bad_servers[key] = true -- do not try the same srv again
         base.set_srv_status(skey, srv, failed)
         free_server_func(srv, failed)
     end
