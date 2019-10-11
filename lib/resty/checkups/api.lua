@@ -184,6 +184,19 @@ function _M.create_checker()
         return
     end
 
+    local skey, v, idx, cls, i
+    for skey, v in pairs(base.upstream.checkups) do
+        for idx, cls in pairs(v.cluster) do
+            if cls.servers then
+                local num = #cls.servers
+                for i = num, 1, -1 do
+                    local rand = math.random(num)
+                    cls.servers[i], cls.servers[rand] = cls.servers[rand], cls.servers[i]
+                end
+            end
+        end
+    end
+
     -- shd config syncer enabled
     if base.upstream.shd_config_version then
         dyconfig.create_shd_config_syncer()
