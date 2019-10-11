@@ -88,13 +88,15 @@ local function shd_config_syncer(premature)
                 if shd_servers then
                     shd_servers = cjson.decode(shd_servers)
                     local tmp = base.table_dup(shd_servers)
-                    local idx, cls, i
-                    for idx, cls in pairs(tmp.cluster) do
-                        if cls.servers then
-                            local num = #cls.servers
-                            for i = num, 1, -1 do
-                                local rand = math.random(num)
-                                cls.servers[i], cls.servers[rand] = cls.servers[rand], cls.servers[i]
+                    if not tmp.mode or tmp.mode == 'rr' or tmp.mode == 'wrr' then
+                        local idx, cls, i
+                        for idx, cls in pairs(tmp.cluster) do
+                            if cls.servers then
+                                local num = #cls.servers
+                                for i = num, 1, -1 do
+                                    local rand = math.random(num)
+                                    cls.servers[i], cls.servers[rand] = cls.servers[rand], cls.servers[i]
+                                end
                             end
                         end
                     end
