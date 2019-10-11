@@ -245,6 +245,4 @@ function _M.try_cluster(skey, request_cb, opts)
     return res, err
 end
 
-math.randomseed(tostring(ngx.now() * 1000):reverse())
-
 return _M
