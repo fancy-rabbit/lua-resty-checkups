@@ -73,11 +73,13 @@ local function prepare_callbacks(skey, opts)
             key = ngx.var.remote_addr
         elseif mode == "header_hash" then
             key = ngx.var.http_x_hash_key or ngx.var.uri
-        elseif mode == "uid_hash" or mode == "webuid_hash" then
+        elseif mode == "uid_hash" or mode == "webuid_hash" or mode == "grpc_uid_hash" then
             if mode == "uid_hash" then
                 key = ngx.var.arg_u
-            else
+            elseif mode == "webuid_hash" then
                 key = ngx.var.web_uid
+            else
+                key = ngx.var.http_x_maimai_mmid
             end
             if not key or key == '' or tonumber(key) <= 0 or tonumber(key) == 6 then
                 key = tostring(math.random(-1024, -1))
