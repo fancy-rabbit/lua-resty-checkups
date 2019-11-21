@@ -33,7 +33,7 @@ function _M.next_round_robin_server(servers, peer_cb)
         -- init round robin state
         srv.weight = srv.weight or 1
         srv.effective_weight = srv.effective_weight or srv.weight
-        srv.current_weight = srv.current_weight or 0
+        srv.current_weight = srv.current_weight or -srv.weight
 
         if peer_cb(idx, srv) then
             srv.current_weight = srv.current_weight + srv.effective_weight
