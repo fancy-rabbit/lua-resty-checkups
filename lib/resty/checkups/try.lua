@@ -81,7 +81,7 @@ local function prepare_callbacks(skey, opts)
             else
                 key = ngx.var.http_x_maimai_mmid
             end
-            if not key or key == '' or tonumber(key) <= 0 or tonumber(key) == 6 then
+            if not key or key == '' or not tonumber(key) or tonumber(key) <= 0 or tonumber(key) == 6 then
                 key = tostring(math.random(-1024, -1))
             end
         end
