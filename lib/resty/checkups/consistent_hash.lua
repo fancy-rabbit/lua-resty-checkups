@@ -1,31 +1,30 @@
 -- Copyright (C) 2014-2016, UPYUN Inc.
 
 local floor      = math.floor
-local str_byte   = string.byte
 local tab_sort   = table.sort
 local tab_insert = table.insert
-local bxor       = bit.bxor
 
 local _M = { _VERSION = "0.11" }
 
 local REPLICAS  = 160
-local LUCKY_NUM = 1
 
 
 local function hash_string(str)
-    return bxor(ngx.crc32_short(str), 0xffffffff)
+    return ngx.crc32_short(str)
 end
 
 
 local function init_consistent_hash_state(servers)
     local circle, members = {}, 0
     for index, srv in ipairs(servers) do
-        local key = ("%s:%s"):format(srv.host, srv.port)
+        local key = ("%s%s%s"):format(srv.host, string.char(0), srv.port)
         local base_hash = hash_string(key)
+        local prev_hash = 0
         for c = 1, REPLICAS * (srv.weight or 1) do
-            -- TODO: more balance hash
-            local hash = bxor(base_hash * c * LUCKY_NUM, 0xffffffff)
+            key = ("%s%s"):format(base_hash, prev_hash)
+            local hash = hash_string(key)
             tab_insert(circle, { hash, index })
+            prev_hash = hash
         end
         members = members + 1
     end
